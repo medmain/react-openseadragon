@@ -1,5 +1,5 @@
 {
-  "@import": "1place/npm-package#^0.1.0",
+  "@import": "medmain/npm-package#^0.1.0",
   "name": "@medmain/react-openseadragon",
   "version": "0.1.2",
   "description": "React component to wrap the OpenSeadragon image viewer",
