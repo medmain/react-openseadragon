@@ -1,10 +1,11 @@
 {
   "@import": "medmain/npm-package#^0.1.0",
   "name": "@medmain/react-openseadragon",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "React component to wrap the OpenSeadragon image viewer",
   "dependencies": {
-    "prop-types": "^15.6.0"
+    "hoist-non-react-statics": "^3.0.1",
+    "prop-types": "^15.6.2"
   },
   "cjsTranspiler": {
     "transformJSX": true
