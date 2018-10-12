@@ -21,6 +21,7 @@ export class OpenSeadragon extends React.Component {
     onUpdateViewport: PropTypes.func,
     onZoom: PropTypes.func,
     style: PropTypes.object,
+    crossOriginPolicy: PropTypes.string,
     debugMode: PropTypes.bool,
     children: PropTypes.node
   };
@@ -39,6 +40,7 @@ export class OpenSeadragon extends React.Component {
       navigatorPosition,
       gestureSettingsMouse,
       onFullyLoaded,
+      crossOriginPolicy = false,
       debugMode
     } = this.props;
 
@@ -51,6 +53,7 @@ export class OpenSeadragon extends React.Component {
       showNavigator,
       navigatorPosition,
       gestureSettingsMouse,
+      crossOriginPolicy,
       debugMode
     });
 
