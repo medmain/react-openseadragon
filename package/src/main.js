@@ -71,6 +71,8 @@ export class OpenSeadragon extends React.Component {
   componentWillUnmount() {
     this.instance.world.removeAllHandlers();
     this.instance.removeAllHandlers();
+
+    this.elements.clear();
   }
 
   fullyLoaded = false;
@@ -139,23 +141,13 @@ export class OpenSeadragon extends React.Component {
     }
   };
 
-  addOverlay(element, {x, y, width, height} = {}) {
-    let location;
-
-    if (x !== undefined && y !== undefined) {
-      if (width !== undefined && height !== undefined) {
-        location = new this.OSD.Rect({x, y, width, height});
-      } else {
-        location = new this.OSD.Point({x, y});
-      }
-
+  addOverlay(element, location) {
+    if (location) {
       this.instance.addOverlay({element, location});
     } else {
       const homeBounds = this.instance.world.getHomeBounds();
-      location = new this.OSD.Rect(0, 0, homeBounds.width, homeBounds.height);
+      this.instance.addOverlay(element, new this.OSD.Rect(0, 0, homeBounds.width, homeBounds.height));
     }
-
-    this.instance.addOverlay(element, location);
   }
 
   removeOverlay(element) {
@@ -166,22 +158,53 @@ export class OpenSeadragon extends React.Component {
     return new this.OSD.MouseTracker(params);
   }
 
+  elements = new Map();
+
+  getElement(key) {
+    const id = this.getOverlayId(key);
+    let element = this.elements.get(id);
+
+    if (element) {
+      return element;
+    }
+
+    element = document.createElement('div');
+    element.id = id;
+
+    this.elements.set(id, element);
+
+    return element;
+  }
+
+  getOverlayId(key) {
+    return `Overlay${key}`;
+  }
+
+  renderChildren() {
+    const {children} = this.props;
+
+    if (this.instance && children) {
+      return React.Children.map(children, child => {
+        if (child) {
+          const element = this.getElement(child.key);
+
+          element.style['pointer-events'] = 'none';
+          return ReactDOM.createPortal(React.cloneElement(child, {element}), element);
+        }
+      });
+    }
+
+    return null;
+  }
+
   render() {
-    const {style, children} = this.props;
+    const {style} = this.props;
 
     return (
       <React.Fragment>
         <div id={this.id} style={style} />
         <OpenSeadragonContext.Provider value={this}>
-          {this.instance &&
-            children &&
-            React.Children.map(children, child => {
-              if (child) {
-                const element = document.createElement('div');
-                element.style['pointer-events'] = 'none';
-                return ReactDOM.createPortal(React.cloneElement(child, {element}), element);
-              }
-            })}
+          {this.renderChildren()}
         </OpenSeadragonContext.Provider>
       </React.Fragment>
     );
