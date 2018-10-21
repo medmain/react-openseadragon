@@ -7,23 +7,34 @@ import {withOpenSeadragon} from './main';
 export class Overlay extends React.Component {
   static propTypes = {
     element: PropTypes.instanceOf(HTMLElement).isRequired,
-    x: PropTypes.number,
-    y: PropTypes.number,
-    width: PropTypes.number,
-    height: PropTypes.number,
+    location: PropTypes.shape({
+      x: PropTypes.number,
+      y: PropTypes.number,
+      width: PropTypes.number,
+      height: PropTypes.number
+    }),
     style: PropTypes.object,
     children: PropTypes.node,
     openSeadragon: PropTypes.object.isRequired
   };
 
   componentDidMount() {
-    const {openSeadragon, element, x, y, width, height, style} = this.props;
+    const {openSeadragon, element, location, style} = this.props;
 
     if (style) {
       Object.assign(element.style, style);
     }
 
-    openSeadragon.addOverlay(element, {x, y, width, height});
+    openSeadragon.addOverlay(element, location);
+  }
+
+  componentDidUpdate(prevProps) {
+    const {openSeadragon: {instance}, element, location} = this.props;
+
+    if (location !== prevProps.location) {
+      instance.getOverlayById(element).update(location);
+      instance.forceRedraw();
+    }
   }
 
   componentWillUnmount() {
