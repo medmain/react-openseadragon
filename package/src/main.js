@@ -32,6 +32,12 @@ export class OpenSeadragon extends React.Component {
     debugMode: false
   };
 
+  fullyLoaded = false;
+
+  id = String(Math.round(Math.random() * 1000000000));
+
+  elements = new Map();
+
   async componentDidMount() {
     const {
       tileSources,
@@ -74,10 +80,6 @@ export class OpenSeadragon extends React.Component {
 
     this.elements.clear();
   }
-
-  fullyLoaded = false;
-
-  id = String(Math.round(Math.random() * 1000000000));
 
   isFullyLoaded() {
     const {world} = this.instance;
@@ -146,7 +148,10 @@ export class OpenSeadragon extends React.Component {
       this.instance.addOverlay({element, location});
     } else {
       const homeBounds = this.instance.world.getHomeBounds();
-      this.instance.addOverlay(element, new this.OSD.Rect(0, 0, homeBounds.width, homeBounds.height));
+      this.instance.addOverlay(
+        element,
+        new this.OSD.Rect(0, 0, homeBounds.width, homeBounds.height)
+      );
     }
   }
 
@@ -158,26 +163,17 @@ export class OpenSeadragon extends React.Component {
     return new this.OSD.MouseTracker(params);
   }
 
-  elements = new Map();
+  render() {
+    const {style} = this.props;
 
-  getElement(key) {
-    const id = this.getOverlayId(key);
-    let element = this.elements.get(id);
-
-    if (element) {
-      return element;
-    }
-
-    element = document.createElement('div');
-    element.id = id;
-
-    this.elements.set(id, element);
-
-    return element;
-  }
-
-  getOverlayId(key) {
-    return `Overlay${key}`;
+    return (
+      <React.Fragment>
+        <div id={this.id} style={style} />
+        <OpenSeadragonContext.Provider value={this}>
+          {this.renderChildren()}
+        </OpenSeadragonContext.Provider>
+      </React.Fragment>
+    );
   }
 
   renderChildren() {
@@ -197,17 +193,24 @@ export class OpenSeadragon extends React.Component {
     return null;
   }
 
-  render() {
-    const {style} = this.props;
+  getElement(key) {
+    const id = this.getOverlayId(key);
+    let element = this.elements.get(id);
 
-    return (
-      <React.Fragment>
-        <div id={this.id} style={style} />
-        <OpenSeadragonContext.Provider value={this}>
-          {this.renderChildren()}
-        </OpenSeadragonContext.Provider>
-      </React.Fragment>
-    );
+    if (element) {
+      return element;
+    }
+
+    element = document.createElement('div');
+    element.id = id;
+
+    this.elements.set(id, element);
+
+    return element;
+  }
+
+  getOverlayId(key) {
+    return `Overlay${key}`;
   }
 }
 
