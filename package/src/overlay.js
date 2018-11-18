@@ -29,7 +29,11 @@ export class Overlay extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const {openSeadragon: {instance}, element, location} = this.props;
+    const {
+      openSeadragon: {instance},
+      element,
+      location
+    } = this.props;
 
     if (location !== prevProps.location) {
       instance.getOverlayById(element).update(location);
