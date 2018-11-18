@@ -3,7 +3,7 @@
     "@type": "method",
     "@run": [
       "(@import shell/bash) run \"./node_modules/.bin/eslint .\"",
-      "(@import shell/bash) run \"./node_modules/.bin/prettier-eslint-check **/*.js\""
+      "(@import shell/bash) run \"./node_modules/.bin/prettier-eslint-check '**/*.js'\""
     ],
     "@listen": "@lint"
   },
