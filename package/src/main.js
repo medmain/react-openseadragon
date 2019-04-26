@@ -63,6 +63,8 @@ export class OpenSeadragon extends React.Component {
       debugMode
     });
 
+    this.instance.innerTracker.keyHandler = null; // Disable `w`, `a`, `s` and `d` pan shortcuts
+
     this.instance.addHandler('open', this.onOpen);
     this.instance.addHandler('resize', this.onResize);
     this.instance.addHandler('rotate', this.onRotate);
