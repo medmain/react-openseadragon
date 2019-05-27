@@ -165,6 +165,15 @@ export class OpenSeadragon extends React.Component {
     return new this.OSD.MouseTracker(params);
   }
 
+  convertPointToScreenPixels = point => {
+    const {viewport} = this.instance;
+
+    const pointInImagePx = new this.OSD.Point(point.x, point.y);
+    const {x, y} = viewport.imageToViewerElementCoordinates(pointInImagePx);
+
+    return {x, y};
+  };
+
   render() {
     const {style} = this.props;
 
