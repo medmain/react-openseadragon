@@ -197,7 +197,7 @@ export class OpenSeadragon extends React.Component {
     this.originalDragEndHandler = this.instance.innerTracker.dragEndHandler;
 
     this.instance.innerTracker.dragEndHandler = event => {
-      const result = dragEndHandler(event);
+      const result = dragEndHandler({event});
       const eventConsumed = result !== false;
       if (!eventConsumed) {
         this.originalDragEndHandler(event); // propagate the event
