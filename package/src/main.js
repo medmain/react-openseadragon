@@ -174,25 +174,35 @@ export class OpenSeadragon extends React.Component {
     return {x, y};
   };
 
-  addDragHandler(handlerDrag) {
+  addDragHandler(dragHandler) {
     this.originalDragHandler = this.instance.innerTracker.dragHandler;
 
     this.instance.innerTracker.dragHandler = event => {
       const {x, y} = event.position;
       const viewerPoint = new this.OSD.Point(x, y);
       const point = this.instance.viewport.viewerElementToImageCoordinates(viewerPoint);
-      handlerDrag({point, event});
+      const result = dragHandler({point, event});
+      const eventConsumed = result !== false;
+      if (!eventConsumed) {
+        this.originalDragHandler(event); // propagate the event
+      }
     };
-  }
-
-  addDragEndHandler(handlerDragEnd) {
-    this.originalDragEndHandler = this.instance.innerTracker.dragEndHandler;
-
-    this.instance.innerTracker.dragEndHandler = handlerDragEnd;
   }
 
   removeDragHandler() {
     this.instance.innerTracker.dragHandler = this.originalDragHandler;
+  }
+
+  addDragEndHandler(dragEndHandler) {
+    this.originalDragEndHandler = this.instance.innerTracker.dragEndHandler;
+
+    this.instance.innerTracker.dragEndHandler = event => {
+      const result = dragEndHandler(event);
+      const eventConsumed = result !== false;
+      if (!eventConsumed) {
+        this.originalDragEndHandler(event); // propagate the event
+      }
+    };
   }
 
   removeDragEndHandler() {
