@@ -7,6 +7,10 @@ import {loadOpenSeadragon} from './loader';
 
 export const OpenSeadragonContext = React.createContext();
 
+const DRAG_EVENT_TYPE = 'drag';
+const DRAG_END_EVENT_TYPE = 'dragEnd';
+const MOVE_EVENT_TYPE = 'move';
+
 export class OpenSeadragon extends React.Component {
   static propTypes = {
     tileSources: PropTypes.string.isRequired,
@@ -65,6 +69,8 @@ export class OpenSeadragon extends React.Component {
 
     this.instance.innerTracker.keyHandler = null; // Disable `w`, `a`, `s` and `d` pan shortcuts
 
+    this._initializeMouseEventHandlers();
+
     this.instance.addHandler('open', this.onOpen);
     this.instance.addHandler('resize', this.onResize);
     this.instance.addHandler('rotate', this.onRotate);
@@ -81,6 +87,52 @@ export class OpenSeadragon extends React.Component {
     this.instance.removeAllHandlers();
 
     this.elements.clear();
+  }
+
+  _initializeMouseEventHandlers() {
+    const tracker = this.instance.innerTracker;
+
+    // the original mouse event handlers are the first handler, for each event type
+    this.mouseEventHandlers = {
+      [DRAG_EVENT_TYPE]: [tracker.dragHandler],
+      [DRAG_END_EVENT_TYPE]: [tracker.dragEndHandler],
+      [MOVE_EVENT_TYPE]: [tracker.moveHandler]
+    };
+
+    tracker.dragHandler = event => {
+      this._runMouseEventHandlers(event, DRAG_EVENT_TYPE);
+    };
+
+    tracker.dragEndHandler = event => {
+      this._runMouseEventHandlers(event, DRAG_END_EVENT_TYPE);
+    };
+
+    tracker.moveEndHandler = event => {
+      this._runMouseEventHandlers(event, MOVE_EVENT_TYPE);
+    };
+  }
+
+  _runMouseEventHandlers(event, type) {
+    const handlers = this.mouseEventHandlers[type];
+    for (let index = handlers.length - 1; index >= 0; index--) {
+      const handler = handlers[index];
+      const result = handler(event);
+      const eventConsumed = result !== false;
+      if (eventConsumed) {
+        break;
+      }
+    }
+  }
+
+  _addMouseEventHandler(type, handler) {
+    const handlers = this.mouseEventHandlers[type];
+    handlers.push(handler);
+  }
+
+  _removeMouseEventHandler(type, handler) {
+    const handlers = this.mouseEventHandlers[type];
+    const index = handlers.indexOf(handler);
+    handlers.splice(index, 1);
   }
 
   isFullyLoaded() {
@@ -174,39 +226,35 @@ export class OpenSeadragon extends React.Component {
     return {x, y};
   };
 
-  addDragHandler(dragHandler) {
-    this.originalDragHandler = this.instance.innerTracker.dragHandler;
+  convertScreenPointToImagePoint = point => {
+    const viewerPoint = new this.OSD.Point(point.x, point.y);
+    const {x, y} = this.instance.viewport.viewerElementToImageCoordinates(viewerPoint);
 
-    this.instance.innerTracker.dragHandler = event => {
-      const {x, y} = event.position;
-      const viewerPoint = new this.OSD.Point(x, y);
-      const point = this.instance.viewport.viewerElementToImageCoordinates(viewerPoint);
-      const result = dragHandler({point, event});
-      const eventConsumed = result !== false;
-      if (!eventConsumed) {
-        this.originalDragHandler(event); // propagate the event
-      }
-    };
+    return {x, y};
+  };
+
+  addDragHandler(handler) {
+    this._addMouseEventHandler(DRAG_EVENT_TYPE, handler);
   }
 
-  removeDragHandler() {
-    this.instance.innerTracker.dragHandler = this.originalDragHandler;
+  removeDragHandler(handler) {
+    this._removeMouseEventHandler(DRAG_EVENT_TYPE, handler);
   }
 
-  addDragEndHandler(dragEndHandler) {
-    this.originalDragEndHandler = this.instance.innerTracker.dragEndHandler;
-
-    this.instance.innerTracker.dragEndHandler = event => {
-      const result = dragEndHandler({event});
-      const eventConsumed = result !== false;
-      if (!eventConsumed) {
-        this.originalDragEndHandler(event); // propagate the event
-      }
-    };
+  addDragEndHandler(handler) {
+    this._addMouseEventHandler(DRAG_END_EVENT_TYPE, handler);
   }
 
-  removeDragEndHandler() {
-    this.instance.innerTracker.dragEndHandler = this.originalDragEndHandler;
+  removeDragEndHandler(handler) {
+    this._removeMouseEventHandler(DRAG_END_EVENT_TYPE, handler);
+  }
+
+  addMoveHandler(handler) {
+    this._addMouseEventHandler(MOVE_EVENT_TYPE, handler);
+  }
+
+  removeMoveHandler(handler) {
+    this._removeMouseEventHandler(MOVE_EVENT_TYPE, handler);
   }
 
   render() {
