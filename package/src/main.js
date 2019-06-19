@@ -10,6 +10,7 @@ export const OpenSeadragonContext = React.createContext();
 const DRAG_EVENT_TYPE = 'drag';
 const DRAG_END_EVENT_TYPE = 'dragEnd';
 const MOVE_EVENT_TYPE = 'move';
+const CLICK_EVENT_TYPE = 'click';
 
 export class OpenSeadragon extends React.Component {
   static propTypes = {
@@ -92,47 +93,57 @@ export class OpenSeadragon extends React.Component {
   _initializeMouseEventHandlers() {
     const tracker = this.instance.innerTracker;
 
-    // the original mouse event handlers are the first handler, for each event type
+    // Set up a stack of `{handler, target}` for each event type
     this.mouseEventHandlers = {
-      [DRAG_EVENT_TYPE]: [tracker.dragHandler],
-      [DRAG_END_EVENT_TYPE]: [tracker.dragEndHandler],
-      [MOVE_EVENT_TYPE]: [tracker.moveHandler]
+      [CLICK_EVENT_TYPE]: [{handler: tracker.clickHandler}],
+      [MOVE_EVENT_TYPE]: [{handler: tracker.moveHandler}],
+      [DRAG_EVENT_TYPE]: [{handler: tracker.dragHandler}],
+      [DRAG_END_EVENT_TYPE]: [{handler: tracker.dragEndHandler}]
     };
 
+    tracker.clickHandler = event => {
+      this._runMouseEventHandlers(event, CLICK_EVENT_TYPE);
+    };
+    tracker.moveHandler = event => {
+      this._runMouseEventHandlers(event, MOVE_EVENT_TYPE);
+    };
     tracker.dragHandler = event => {
       this._runMouseEventHandlers(event, DRAG_EVENT_TYPE);
     };
-
     tracker.dragEndHandler = event => {
       this._runMouseEventHandlers(event, DRAG_END_EVENT_TYPE);
-    };
-
-    tracker.moveEndHandler = event => {
-      this._runMouseEventHandlers(event, MOVE_EVENT_TYPE);
     };
   }
 
   _runMouseEventHandlers(event, type) {
-    const handlers = this.mouseEventHandlers[type];
-    for (let index = handlers.length - 1; index >= 0; index--) {
-      const handler = handlers[index];
+    const mouseEventHandlers = this.mouseEventHandlers[type];
+
+    for (let index = mouseEventHandlers.length - 1; index >= 0; index--) {
+      const {handler, target} = mouseEventHandlers[index];
+      if (target && event.originalEvent.target !== target) {
+        continue; // ignore the event if the `target` doesn't match
+      }
       const result = handler(event);
       const eventConsumed = result !== false;
       if (eventConsumed) {
-        break;
+        break; // don't propagate to the next handler of the stack if the event is consumed
       }
     }
   }
 
-  _addMouseEventHandler(type, handler) {
+  _addMouseEventHandler(type, handler, target) {
     const handlers = this.mouseEventHandlers[type];
-    handlers.push(handler);
+
+    handlers.push({handler, target});
   }
 
-  _removeMouseEventHandler(type, handler) {
-    const handlers = this.mouseEventHandlers[type];
-    const index = handlers.indexOf(handler);
-    handlers.splice(index, 1);
+  _removeMouseEventHandler(type, handler, target) {
+    const trackers = this.mouseEventHandlers[type];
+
+    const index = trackers.findIndex(
+      tracker => handler === tracker.handler && tracker.target === target
+    );
+    trackers.splice(index, 1);
   }
 
   isFullyLoaded() {
@@ -233,28 +244,40 @@ export class OpenSeadragon extends React.Component {
     return {x, y};
   };
 
-  addDragHandler(handler) {
-    this._addMouseEventHandler(DRAG_EVENT_TYPE, handler);
+  // CLICK event
+  addClickHandler(handler, target) {
+    this._addMouseEventHandler(CLICK_EVENT_TYPE, handler, target);
   }
 
-  removeDragHandler(handler) {
-    this._removeMouseEventHandler(DRAG_EVENT_TYPE, handler);
+  removeClickHandler(handler, target) {
+    this._removeMouseEventHandler(CLICK_EVENT_TYPE, handler, target);
   }
 
-  addDragEndHandler(handler) {
-    this._addMouseEventHandler(DRAG_END_EVENT_TYPE, handler);
+  // MOVE event
+  addMoveHandler(handler, target) {
+    this._addMouseEventHandler(MOVE_EVENT_TYPE, handler, target);
   }
 
-  removeDragEndHandler(handler) {
-    this._removeMouseEventHandler(DRAG_END_EVENT_TYPE, handler);
+  removeMoveHandler(handler, target) {
+    this._removeMouseEventHandler(MOVE_EVENT_TYPE, handler, target);
   }
 
-  addMoveHandler(handler) {
-    this._addMouseEventHandler(MOVE_EVENT_TYPE, handler);
+  // DRAG...
+  addDragHandler(handler, target) {
+    this._addMouseEventHandler(DRAG_EVENT_TYPE, handler, target);
   }
 
-  removeMoveHandler(handler) {
-    this._removeMouseEventHandler(MOVE_EVENT_TYPE, handler);
+  removeDragHandler(handler, target) {
+    this._removeMouseEventHandler(DRAG_EVENT_TYPE, handler, target);
+  }
+
+  // ...and DROP events
+  addDragEndHandler(handler, target) {
+    this._addMouseEventHandler(DRAG_END_EVENT_TYPE, handler, target);
+  }
+
+  removeDragEndHandler(handler, target) {
+    this._removeMouseEventHandler(DRAG_END_EVENT_TYPE, handler, target);
   }
 
   render() {
