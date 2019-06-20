@@ -96,7 +96,7 @@ export class OpenSeadragon extends React.Component {
     // Set up a stack of `{handler, target}` for each event type
     this.mouseEventHandlers = {
       [CLICK_EVENT_TYPE]: [{handler: tracker.clickHandler}],
-      [MOVE_EVENT_TYPE]: [{handler: tracker.moveHandler}],
+      [MOVE_EVENT_TYPE]: [], // innerTracker.moveHandler is `null` by default
       [DRAG_EVENT_TYPE]: [{handler: tracker.dragHandler}],
       [DRAG_END_EVENT_TYPE]: [{handler: tracker.dragEndHandler}]
     };
