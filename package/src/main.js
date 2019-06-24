@@ -254,7 +254,7 @@ export class OpenSeadragon extends React.Component {
 
     for (let index = mouseEventHandlers.length - 1; index >= 0; index--) {
       const {handler, target} = mouseEventHandlers[index];
-      if (target && event.originalEvent.target !== target) {
+      if (target && !target.contains(event.originalEvent.target)) {
         continue; // ignore the event if the `target` doesn't match
       }
       const result = handler(event);
@@ -266,9 +266,9 @@ export class OpenSeadragon extends React.Component {
   }
 
   _addMouseEventHandler(type, handler, target) {
-    const handlers = this.mouseEventHandlers[type];
+    const trackers = this.mouseEventHandlers[type];
 
-    handlers.push({handler, target});
+    trackers.push({handler, target});
   }
 
   _removeMouseEventHandler(type, handler, target) {
@@ -277,6 +277,10 @@ export class OpenSeadragon extends React.Component {
     const index = trackers.findIndex(
       tracker => handler === tracker.handler && tracker.target === target
     );
+    if (index === -1) {
+      throw new Error('Unable to remove the mouse event handler, not found in the stack');
+    }
+
     trackers.splice(index, 1);
   }
 
