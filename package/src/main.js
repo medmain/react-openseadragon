@@ -189,50 +189,50 @@ export class OpenSeadragon extends React.Component {
   };
 
   // CLICK event
-  addClickHandler(handler, target) {
-    this._addMouseEventHandler(CLICK_EVENT_TYPE, handler, target);
+  addClickHandler(handler) {
+    this._addMouseEventHandler(CLICK_EVENT_TYPE, handler);
   }
 
-  removeClickHandler(handler, target) {
-    this._removeMouseEventHandler(CLICK_EVENT_TYPE, handler, target);
+  removeClickHandler(handler) {
+    this._removeMouseEventHandler(CLICK_EVENT_TYPE, handler);
   }
 
   // MOVE event
-  addMoveHandler(handler, target) {
-    this._addMouseEventHandler(MOVE_EVENT_TYPE, handler, target);
+  addMoveHandler(handler) {
+    this._addMouseEventHandler(MOVE_EVENT_TYPE, handler);
   }
 
-  removeMoveHandler(handler, target) {
-    this._removeMouseEventHandler(MOVE_EVENT_TYPE, handler, target);
+  removeMoveHandler(handler) {
+    this._removeMouseEventHandler(MOVE_EVENT_TYPE, handler);
   }
 
   // DRAG...
-  addDragHandler(handler, target) {
-    this._addMouseEventHandler(DRAG_EVENT_TYPE, handler, target);
+  addDragHandler(handler) {
+    this._addMouseEventHandler(DRAG_EVENT_TYPE, handler);
   }
 
-  removeDragHandler(handler, target) {
-    this._removeMouseEventHandler(DRAG_EVENT_TYPE, handler, target);
+  removeDragHandler(handler) {
+    this._removeMouseEventHandler(DRAG_EVENT_TYPE, handler);
   }
 
   // ...and DROP events
-  addDragEndHandler(handler, target) {
-    this._addMouseEventHandler(DRAG_END_EVENT_TYPE, handler, target);
+  addDragEndHandler(handler) {
+    this._addMouseEventHandler(DRAG_END_EVENT_TYPE, handler);
   }
 
-  removeDragEndHandler(handler, target) {
-    this._removeMouseEventHandler(DRAG_END_EVENT_TYPE, handler, target);
+  removeDragEndHandler(handler) {
+    this._removeMouseEventHandler(DRAG_END_EVENT_TYPE, handler);
   }
 
   _initializeMouseEventHandlers() {
     const tracker = this.instance.innerTracker;
 
-    // Set up a stack of `{handler, target}` for each event type
+    // Set up a stack of `handler` for each event type
     this.mouseEventHandlers = {
-      [CLICK_EVENT_TYPE]: [{handler: tracker.clickHandler}],
+      [CLICK_EVENT_TYPE]: [tracker.clickHandler],
       [MOVE_EVENT_TYPE]: [], // innerTracker.moveHandler is `null` by default
-      [DRAG_EVENT_TYPE]: [{handler: tracker.dragHandler}],
-      [DRAG_END_EVENT_TYPE]: [{handler: tracker.dragEndHandler}]
+      [DRAG_EVENT_TYPE]: [tracker.dragHandler],
+      [DRAG_END_EVENT_TYPE]: [tracker.dragEndHandler]
     };
 
     tracker.clickHandler = event => {
@@ -253,10 +253,7 @@ export class OpenSeadragon extends React.Component {
     const mouseEventHandlers = this.mouseEventHandlers[type];
 
     for (let index = mouseEventHandlers.length - 1; index >= 0; index--) {
-      const {handler, target} = mouseEventHandlers[index];
-      if (target && !target.contains(event.originalEvent.target)) {
-        continue; // ignore the event if the `target` doesn't match
-      }
+      const handler = mouseEventHandlers[index];
       const result = handler(event);
       const eventConsumed = result !== false;
       if (eventConsumed) {
@@ -265,23 +262,21 @@ export class OpenSeadragon extends React.Component {
     }
   }
 
-  _addMouseEventHandler(type, handler, target) {
-    const trackers = this.mouseEventHandlers[type];
+  _addMouseEventHandler(type, handler) {
+    const handlers = this.mouseEventHandlers[type];
 
-    trackers.push({handler, target});
+    handlers.push(handler);
   }
 
-  _removeMouseEventHandler(type, handler, target) {
-    const trackers = this.mouseEventHandlers[type];
+  _removeMouseEventHandler(type, handler) {
+    const handlers = this.mouseEventHandlers[type];
 
-    const index = trackers.findIndex(
-      tracker => handler === tracker.handler && tracker.target === target
-    );
+    const index = handlers.findIndex(stackHandler => stackHandler === handler);
     if (index === -1) {
       throw new Error('Unable to remove the mouse event handler, not found in the stack');
     }
 
-    trackers.splice(index, 1);
+    handlers.splice(index, 1);
   }
 
   render() {
