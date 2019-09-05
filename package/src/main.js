@@ -65,7 +65,10 @@ export class OpenSeadragon extends React.Component {
       navigatorPosition,
       gestureSettingsMouse,
       crossOriginPolicy,
-      debugMode
+      debugMode,
+      // the default value for `maxImageCacheCount` (200) causes crashes on iOS
+      // `Total canvas memory use exceeds the maximum limit (224 MB).`
+      maxImageCacheCount: 100
     });
 
     this.instance.innerTracker.keyHandler = null; // Disable `w`, `a`, `s` and `d` pan shortcuts
