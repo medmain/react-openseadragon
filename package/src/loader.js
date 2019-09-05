@@ -1,7 +1,7 @@
 /* global OpenSeadragon */
 
 const OPEN_SEADRAGON_URL =
-  'https://unpkg.com/openseadragon@2.4.0/build/openseadragon/openseadragon.min.js';
+  'https://cdn.jsdelivr.net/npm/openseadragon@2.4.1/build/openseadragon/openseadragon.min.js';
 
 export async function loadOpenSeadragon() {
   if (typeof OpenSeadragon === 'undefined') {
