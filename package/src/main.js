@@ -57,6 +57,10 @@ export class OpenSeadragon extends React.Component {
 
     this.OSD = await loadOpenSeadragon();
 
+    // On iOS, the default value for `maxImageCacheCount` (200) causes the following error:
+    // `Total canvas memory use exceeds the maximum limit (224 MB)`
+    const maxImageCacheCount = isIOSDevice() ? 10 : 100;
+
     this.instance = new this.OSD({
       id: this.id,
       tileSources,
@@ -66,9 +70,7 @@ export class OpenSeadragon extends React.Component {
       gestureSettingsMouse,
       crossOriginPolicy,
       debugMode,
-      // the default value for `maxImageCacheCount` (200) causes crashes on iOS
-      // `Total canvas memory use exceeds the maximum limit (224 MB).`
-      maxImageCacheCount: 50
+      maxImageCacheCount
     });
 
     this.instance.innerTracker.keyHandler = null; // Disable `w`, `a`, `s` and `d` pan shortcuts
@@ -347,3 +349,16 @@ export const withOpenSeadragon = Component => {
 
   return hoistStatics(C, Component);
 };
+
+function isIOSDevice() {
+  if (typeof navigator !== 'object') {
+    return false;
+  }
+  const userAgent = navigator.userAgent;
+  if (typeof userAgent !== 'string') {
+    return false;
+  }
+
+  const deviceNames = ['iPhone', 'iPad'];
+  return deviceNames.some(name => userAgent.includes(name));
+}
