@@ -1,7 +1,7 @@
 {
   "@import": "medmain/npm-package#^0.1.0",
   "name": "@medmain/react-openseadragon",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "React component to wrap the OpenSeadragon image viewer",
   "dependencies": {
     "hoist-non-react-statics": "^3.0.1",

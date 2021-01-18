@@ -14,7 +14,8 @@ const DRAG_END_EVENT_TYPE = 'dragEnd';
 
 export class OpenSeadragon extends React.Component {
   static propTypes = {
-    tileSources: PropTypes.string.isRequired,
+    tileSources: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.object)])
+      .isRequired,
     showNavigationControl: PropTypes.bool,
     showNavigator: PropTypes.bool,
     navigatorPosition: PropTypes.string,
